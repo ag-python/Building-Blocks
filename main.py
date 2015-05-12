@@ -52,7 +52,8 @@ new_node("sand",{"description" : "Sand","hard" : "no"})
 new_node("wood",{"description" : "Wood","hard" : "no"})
 new_node("sapling",{"description" : "Sapling","hard" : "no"})
 new_node("cactus",{"description" : "Cactus","hard" : "no","passthrough":"yes","ow":"yes"})
-
+new_node("iron_block",{"description" : "Iron_block","hard" : "yes"})
+new_node("gold_block",{"description" : "Gold_block","hard" : "no"})
 # This old function isn't needed. It justs prints the nodes that exist before the game starts.
 # If you really need to see the nodes that exist, look at the lines above.
 # print_nodes()
@@ -84,7 +85,7 @@ def explode(x,y,inventory,health):
 			else:
 				dig_node(x+sx,y+sy,inventory,health)
 def get_node(x,y):
-	if str(int(x))+","+str(int(y)) in world:
+	if str(int(round(float(x))))+","+str(int(round(float(y)))) in world:
 		return(world[str(int(x))+","+str(int(y))])
 	else:
 		return("Stone")
@@ -264,6 +265,8 @@ def craft():
 	exitbutton = Rect(300,300,41,23)
 	saplingbutton = Rect(250,200,16,16)
 	wallbutton = Rect(250,225,16,16)
+	ironbutton = Rect(225,275,16,16)
+	goldbutton = Rect(200,275,16,16)
 	infotext = ""
 	leave = 0
 	while leave != 1:
@@ -275,6 +278,8 @@ def craft():
 		screen.blit(pygame.image.load("textures/Menu/Exit_up.png"),(300,300))
 		screen.blit(pygame.image.load("textures/Sapling.png"),(250,200))
 		screen.blit(pygame.image.load("textures/BackWall.png"),(250,225))
+		screen.blit(pygame.image.load("textures/Iron_block.png"),(225,275))
+		screen.blit(pygame.image.load("textures/Gold_block.png"),(200,275))
 		mouse_x,mouse_y = pygame.mouse.get_pos()
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -369,6 +374,36 @@ def craft():
 					else:
 						inventory["tree"] = 0
 						infotext = "You do not have enough items. (You need 1 log)"
+				if pygame.Rect.collidepoint(ironbutton,(mouse_x,mouse_y)):
+					play_sound("sounds/click.ogg")
+					if not "iron_block" in inventory:
+						inventory["iron_block"] = 0
+					if "iron" in inventory:
+						if inventory["iron"] >= 1:
+							print("You have crafted an iron block.")
+							inventory["iron_block"] += 16
+							inventory["iron"] -= 1
+							infotext = "This iron block is appropriate for steel block bases.."
+						else:
+							infotext = "You do not have enough items. (You need 1 iron ore)"
+					else:
+						inventory["iron"] = 0
+						infotext = "You do not have enough items. (You need 1 iron ore)"
+				if pygame.Rect.collidepoint(goldbutton,(mouse_x,mouse_y)):
+					play_sound("sounds/click.ogg")
+					if not "gold_block" in inventory:
+						inventory["gold_block"] = 0
+					if "gold" in inventory:
+						if inventory["gold"] >= 1:
+							print("You have crafted a gold block.")
+							inventory["gold_block"] += 16
+							inventory["gold"] -= 1
+							infotext = "Ooooh!!! Pretty!"
+						else:
+							infotext = "You do not have enough items. (You need 1 gold ore)"
+					else:
+						inventory["iron"] = 0
+						infotext = "You do not have enough items. (You need 1 gold ore)"
 				if pygame.Rect.collidepoint(exitbutton,(mouse_x,mouse_y)):
 					play_sound("sounds/click.ogg")
 					print("Okay, Crafting Completed.")
@@ -389,7 +424,7 @@ selectnode = "stone"
 selectvar = 1
 health = 3
 gametime = 3000
-selectlist = ["stone","grass","iron","gold","brick","tree","backwall","water","sand","door","door2","wood","tnt","sapling"]
+selectlist = ["stone","grass","iron","gold","brick","tree","backwall","water","sand","door","door2","wood","tnt","sapling","iron_block","gold_block"]
 inventory = {"pick":""}
 pygame.key.set_repeat(1, 2)
 gravitytimer = 0
@@ -429,7 +464,7 @@ while True:
 			# Go left
 			direction[0] = "left"
 			direction[1] = ""
-			if get_node_passible((scrollx/16),(scrolly/16)+1,1) and get_node_passible((scrollx/16),(scrolly/16)+2,1):
+			if get_node_passible((scrollx/16.0),(scrolly/16)+1,-0.25) and get_node_passible((scrollx/16),(scrolly/16)+2,-0.25):
 				if get_node(get_player_x(),get_player_y()) == "Water" or get_node(get_player_x(),get_player_y()) == "FlowingWater":
 					scrollx += 2
 					ychange += 1
