@@ -258,29 +258,41 @@ def menu():
 		pygame.display.flip()
 
 def craft():
-	woodpick = Rect(300,200,16,16)
-	woodbutton = Rect(300,250,16,16)
-	door1button = Rect(250,250,16,32)
-	door2button = Rect(350,250,12,32)
-	exitbutton = Rect(300,300,41,23)
-	saplingbutton = Rect(250,200,16,16)
-	wallbutton = Rect(250,225,16,16)
-	ironbutton = Rect(225,275,16,16)
-	goldbutton = Rect(200,275,16,16)
 	infotext = ""
+	scroll = 0
 	leave = 0
 	while leave != 1:
-		screen.blit(pygame.image.load("textures/craft.png"),(0,0))
-		screen.blit(pygame.image.load("textures/Pick_Wood.png"),(300,200))
-		screen.blit(pygame.image.load("textures/Wood.png"),(300,250))
-		screen.blit(pygame.image.load("textures/Door.png"),(250,250))
-		screen.blit(pygame.image.load("textures/Door2.png"),(350,250))
-		screen.blit(pygame.image.load("textures/Menu/Exit_up.png"),(300,300))
-		screen.blit(pygame.image.load("textures/Sapling.png"),(250,200))
-		screen.blit(pygame.image.load("textures/BackWall.png"),(250,225))
-		screen.blit(pygame.image.load("textures/Iron_block.png"),(225,275))
-		screen.blit(pygame.image.load("textures/Gold_block.png"),(200,275))
+		woodpick = Rect(150+scroll,200,32,32)
+		woodbutton = Rect(100+scroll,200,32,32)
+		door1button = Rect(200+scroll,200,32,32)
+		door2button = Rect(250+scroll,200,32,32)
+		exitbutton = Rect(300,300,41,23)
+		saplingbutton = Rect(300+scroll,200,32,32)
+		wallbutton = Rect(350+scroll,200,32,32)
+		ironbutton = Rect(400+scroll,200,32,32)
+		goldbutton = Rect(450+scroll,200,32,32)
 		mouse_x,mouse_y = pygame.mouse.get_pos()
+		textures = [pygame.image.load("textures/Wood.png"),pygame.image.load("textures/Pick_Wood.png"),pygame.image.load("textures/Menu/Tiny_Door.png"),pygame.image.load("textures/Menu/Tiny_Door2.png"),pygame.image.load("textures/Sapling.png"),pygame.image.load("textures/BackWall.png"),pygame.image.load("textures/Iron_block.png"),pygame.image.load("textures/Gold_block.png")]
+		screen.blit(pygame.image.load("textures/craft.png"),(0,0))
+		screen.blit(pygame.image.load("textures/Menu/Exit_up.png"),(300,300))
+		keys = ["wood","pick","left door","right door","sapling","wall","iron","gold"]
+		crafts = {"wood":["1 Tree",woodbutton],"pick":["4 Wood",woodpick],"sapling":["1 Leaf Block",saplingbutton],"left door":["6 Wood planks",door1button],"right door":["6 Wood planks",door2button],"wall":["1 Tree",wallbutton],"iron":["1 Iron Ore",ironbutton],"gold":["1 Gold Ore",goldbutton]}
+		i = 0
+		for texture in textures:
+			tilebackground = pygame.image.load("textures/Menu/Craft_Background.png")
+			if pygame.Rect.collidepoint(Rect((96 + (i * 50))+scroll,196,40,40),(mouse_x,mouse_y)):
+				tilebackground = pygame.transform.scale(tilebackground,(45,45))
+				scaleimage = 4
+			else:
+				tilebackground = pygame.transform.scale(tilebackground,(40,40))
+				scaleimage = 0
+			screen.blit(tilebackground,((96 + (i * 50))+scroll,196))
+			screen.blit(pygame.transform.scale(texture,(32+scaleimage,32+scaleimage)),((100 + (i * 50))+scroll,200))
+			screen.blit(pygame.font.Font('freesansbold.ttf',7).render(crafts[keys[i]][0],True,(0,0,0)),((90 + (i * 50))+scroll,240))
+			screen.blit(pygame.font.Font('freesansbold.ttf',7).render(keys[i].upper(),True,(0,0,0)),((95 + (i * 50))+scroll,185))
+			i += 1
+		screen.blit(pygame.image.load("textures/Menu/ScrollLeft.png"),(0,0))
+		screen.blit(pygame.image.load("textures/Menu/ScrollRight.png"),(500,0))
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				sys.exit()
@@ -381,9 +393,9 @@ def craft():
 					if "iron" in inventory:
 						if inventory["iron"] >= 1:
 							print("You have crafted an iron block.")
-							inventory["iron_block"] += 16
+							inventory["iron_block"] += 1
 							inventory["iron"] -= 1
-							infotext = "This iron block is appropriate for steel block bases.."
+							infotext = "This iron block is appropriate for steel block bases."
 						else:
 							infotext = "You do not have enough items. (You need 1 iron ore)"
 					else:
@@ -396,13 +408,13 @@ def craft():
 					if "gold" in inventory:
 						if inventory["gold"] >= 1:
 							print("You have crafted a gold block.")
-							inventory["gold_block"] += 16
+							inventory["gold_block"] += 1
 							inventory["gold"] -= 1
 							infotext = "Ooooh!!! Pretty!"
 						else:
 							infotext = "You do not have enough items. (You need 1 gold ore)"
 					else:
-						inventory["iron"] = 0
+						inventory["gold"] = 0
 						infotext = "You do not have enough items. (You need 1 gold ore)"
 				if pygame.Rect.collidepoint(exitbutton,(mouse_x,mouse_y)):
 					play_sound("sounds/click.ogg")
@@ -410,16 +422,24 @@ def craft():
 					screen.blit(pygame.image.load("textures/Menu/Exit_down.png"),(300,200))
 					time.sleep(0.5)
 					leave = 1
+		if mouse_x > 500:
+			scroll -= 2
+		if mouse_x < 100:
+			scroll += 2
+					
 		write(infotext,30,30)
 		pygame.display.flip()
 
 menu()
+resolution = 2 # This affects the zoom. Use higher values to zoom in and use less textures. (Note that for values bigger than 5, you cant see or dig anything below you.)
 ychange = -1
+animationvariable = 0
 timer = 0
 scrollx = 0
 scrolly = 0
 direction = ["right","","0"]
 jumpyness = 0
+yvelocity = 0
 selectnode = "stone"
 selectvar = 1
 health = 3
@@ -432,6 +452,7 @@ dropthrough = ["Air","Water","FlowingWater","BackWall","TallGrass"]
 old_top_text = ""
 top_text = ""
 top_text_timer = 0
+moving = False
 ## Functions to make it easier.
 def get_node_passible(x,y,modder):
 	if "passthrough" in nodes[get_node(x+modder,y).lower()]:
@@ -462,9 +483,14 @@ while True:
 			sys.exit()
 		elif event.type == pygame.KEYDOWN and pygame.key.get_pressed()[K_LEFT]:
 			# Go left
+			moving = True
+			ajust = 0
+			if (scrollx/16.0) > 0:
+				ajust = 0.75
+	
 			direction[0] = "left"
 			direction[1] = ""
-			if get_node_passible((scrollx/16.0),(scrolly/16)+1,-0.25) and get_node_passible((scrollx/16),(scrolly/16)+2,-0.25):
+			if get_node_passible((scrollx/16.0)+ajust,(scrolly/16)+1,-0.25) and get_node_passible((scrollx/16)+ajust,(scrolly/16)+2,-0.25):
 				if get_node(get_player_x(),get_player_y()) == "Water" or get_node(get_player_x(),get_player_y()) == "FlowingWater":
 					scrollx += 2
 					ychange += 1
@@ -473,9 +499,12 @@ while True:
 					scrolly += ychange
 				else:
 					scrollx += 2
+		elif not event.type == pygame.KEYDOWN and not event.type == pygame.MOUSEBUTTONDOWN:
+			moving = False
 		elif event.type == pygame.KEYDOWN and pygame.key.get_pressed()[K_RIGHT]:
 			direction[0] = "right"
 			direction[1] = ""
+			moving = True
 			# Go right
 			if get_node_passible((scrollx/16),(scrolly/16)+1,0) and get_node_passible((scrollx/16),(scrolly/16)+2,0):
 				if get_node(get_player_x(),get_player_y()) == "Water" or get_node(get_player_x(),get_player_y()) == "FlowingWater":
@@ -486,13 +515,16 @@ while True:
 					scrolly += ychange
 				else:
 					scrollx -= 2
+		elif not event.type == pygame.KEYDOWN and pygame.key.get_pressed()[K_RIGHT]:
+			moving = False
 		elif event.type == pygame.KEYDOWN and pygame.key.get_pressed()[K_UP]:
 			# Jump
 			if get_node(scrollx/16,scrolly/16) != "Air" and get_node_passible(get_player_x(),get_player_y()+3,0):
 				if get_node(get_player_x(),get_player_y()) == "Water" or get_node(get_player_x(),get_player_y()) == "FlowingWater":
 					scrolly += 2
 				else:
-					scrolly += 28
+					# scrolly += 28
+					yvelocity += 20
 					gravitytimer = 0
 		elif event.type == pygame.KEYDOWN and event.key == K_g:
 			# Find the node under the player and print it (if you are using a terminal)
@@ -508,7 +540,8 @@ while True:
 				direction[2] = "0"
 		elif event.type == pygame.KEYDOWN and event.key == K_m:
 			# Make stuff, or craft if your from minecraft.
-			craft()
+			if flags["mode"] == "Survival":
+				craft()
 		elif event.type == pygame.KEYDOWN and event.key == K_s:
 			# Save
 			play_sound("sounds/Save.wav")
@@ -579,7 +612,7 @@ while True:
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			# Build or dig
 			mouse_x,mouse_y = pygame.mouse.get_pos()
-			spos = sx,sy = (int(round((-(mouse_x/16)+19.7)+scrollx/16)),int(round((-(mouse_y/16)+14.7)+scrolly/16)))
+			spos = sx,sy = (int(round((-((mouse_x+(308*(resolution-1)))/(16*resolution))+19.75)+scrollx/(16))),int(round((-((mouse_y+(208*(resolution-1)))/(16*resolution)))+14.75+(scrolly/16))))
 			if event.button == 1: # Dig or Build
 				if get_node(sx,sy) == "Air" or get_node(sx,sy) == "Water" or get_node(sx,sy) == "FlowingWater":
 					if selectnode in inventory and flags["mode"] == "Survival" and inventory[selectnode] > 0:
@@ -605,9 +638,23 @@ while True:
 				elif get_node(sx,sy) == "Door_Closed2":
 					place_node(sx,sy,"door2")
 				if get_node(sx,sy) == "Tnt":
-					explode(sx,sy,inventory,health)
+					explode(sx,sy,inventory,health)		
+	if moving == True:
+		animationvariable += 1
+		if animationvariable == 10:
+			direction[1] = "walk"
+			animationvariable = 1
+		elif animationvariable > 5:
+			direction[1] = "walk"
+		else:
+			direction[1] = ""
+	elif moving == False:
+		direction[1] = ""
 			 	
 	scrollcheck = (scrollx%16)
+	if not yvelocity <= 0:
+		yvelocity -= 4
+		scrolly += yvelocity
 	# Gravity and Falling to death
 	if scrolly < -800:
 		health -=1 # If you fall off of the world, you will die.
@@ -684,9 +731,13 @@ while True:
 			if scrollx+((int(x)-20) * -16) < 610 and scrollx+((int(x)-20) * -16) > -10:
 				if scrolly+((int(y)-14)* -16) < 410 and scrolly+((int(y)-14)* -16) > -30:
 					if "texture" in nodes[get_node(x,y).lower()]:
-						screen.blit(pygame.image.load("textures/" + nodes[get_node(x,y).lower()]["texture"]),(scrollx+((int(x)-19.5) * -16),scrolly+((int(y)-14.5)* -16)))
+						picture = pygame.image.load("textures/" + nodes[get_node(x,y).lower()]["texture"])
+						size = height,width = picture.get_size()
+						screen.blit(pygame.transform.scale(picture,(width*resolution,height*resolution)),((scrollx*resolution+((int(x)-19.5) * -16*resolution))-(308*(resolution-1)),(scrolly+((int(y)-14.5)* -16))*resolution-(208*(resolution-1))))
 					else:
-						screen.blit(pygame.image.load("textures/" + get_node(x,y) + ".png"),(scrollx+((int(x)-19.5) * -16),scrolly+((int(y)-14.5)* -16)))
+						picture = pygame.image.load("textures/" + get_node(x,y) + ".png")
+						size = height,width = picture.get_size()
+						screen.blit(pygame.transform.scale(picture,(width*resolution,height*resolution)),((scrollx*resolution+((int(x)-19.5) * -16*resolution))-(308*(resolution-1)),(scrolly+((int(y)-14.5)* -16))*resolution-(208*(resolution-1))))
 	if flags["mode"] == "Survival": # Hearts, Death Screen and Respawn.
 		if health > 2:
 			screen.blit(pygame.image.load("textures/player/heart.png"),(20,20))
@@ -702,7 +753,7 @@ while True:
 			scrollx = 0
 			scrolly = 0
 	# Render the player
-	player = pygame.transform.scale(pygame.image.load("textures/player/playerleft" + direction[1] + direction[2] + ".png"),(32,40))
+	player = pygame.transform.scale(pygame.image.load("textures/player/playerleft" + direction[1] + direction[2] + ".png"),(32*resolution,40*resolution))
 	if direction[0] == "right":
 		# If he is pointing in another direction, turn around.
 		player = pygame.transform.flip(player,True,False)
