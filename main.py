@@ -30,30 +30,30 @@ def write(text, start_x,y):
         screen.blit(pygame.image.load("textures/Numbers/"+letter+".png"),(start_x+xadd,y))
         xadd += 7
 
-new_node("grass",{"description" : "Grass","hard" : "no"})
-new_node("tnt",{"description" : "Tnt","hard" : "no","texture" : "TNT.png"})
-new_node("tallgrass",{"description" : "TallGrass","hard" : "no","passthrough":"yes"})
-new_node("door",{"description" : "Door","hard" : "yes","passthrough":"yes"})
-new_node("door_closed",{"description" : "Door_Closed","hard" : "yes"})
-new_node("door2",{"description" : "Door2","hard" : "yes","passthrough":"yes"})
-new_node("door_closed2",{"description" : "Door_Closed2","hard" : "yes"})
-new_node("water",{"description" : "Water","hard" : "no","passthrough":"yes"})
-new_node("flowingwater",{"description" : "FlowingWater","hard" : "no","passthrough":"yes"})
-new_node("flowingwater2",{"description" : "FlowingWater2","hard" : "no","passthrough":"yes"})
-new_node("backwall",{"description" : "BackWall","hard" : "no","passthrough":"yes" })
-new_node("leaves",{"description" : "Leaves","hard" : "no","passthrough":"yes"})
-new_node("tree",{"description" : "Tree","hard" : "no","passthrough":"yes"})
-new_node("iron",{"description" : "Iron","hard" : "yes"})
-new_node("gold",{"description" : "Gold","hard" : "yes"})
-new_node("stone",{"description" : "Stone","hard" : "yes"})
-new_node("brick",{"description" : "Brick","hard" : "yes"})
-new_node("air",{"description" : "Air","hard" : "no","passthrough":"yes"})
-new_node("sand",{"description" : "Sand","hard" : "no"})
-new_node("wood",{"description" : "Wood","hard" : "no"})
-new_node("sapling",{"description" : "Sapling","hard" : "no"})
-new_node("cactus",{"description" : "Cactus","hard" : "no","passthrough":"yes","ow":"yes"})
-new_node("iron_block",{"description" : "Iron_block","hard" : "yes"})
-new_node("gold_block",{"description" : "Gold_block","hard" : "no"})
+new_node("grass",{"description" : "Grass","hard" : False})
+new_node("tnt",{"description" : "Tnt","hard" : False,"texture" : "TNT.png"})
+new_node("tallgrass",{"description" : "TallGrass","hard" : False,"passthrough":True})
+new_node("door",{"description" : "Door","hard" : True,"passthrough":True})
+new_node("door_closed",{"description" : "Door_Closed","hard" : True})
+new_node("door2",{"description" : "Door2","hard" : True,"passthrough":True})
+new_node("door_closed2",{"description" : "Door_Closed2","hard" : True})
+new_node("water",{"description" : "Water","hard" : False,"passthrough":True})
+new_node("flowingwater",{"description" : "FlowingWater","hard" : False,"passthrough":True})
+new_node("flowingwater2",{"description" : "FlowingWater2","hard" : False,"passthrough":True})
+new_node("backwall",{"description" : "BackWall","hard" : False,"passthrough":True })
+new_node("leaves",{"description" : "Leaves","hard" : False,"passthrough":True})
+new_node("tree",{"description" : "Tree","hard" : False,"passthrough":True})
+new_node("iron",{"description" : "Iron","hard" : True})
+new_node("gold",{"description" : "Gold","hard" : True})
+new_node("stone",{"description" : "Stone","hard" : True})
+new_node("brick",{"description" : "Brick","hard" : True})
+new_node("air",{"description" : "Air","hard" : False,"passthrough":True})
+new_node("sand",{"description" : "Sand","hard" : False})
+new_node("wood",{"description" : "Wood","hard" : False})
+new_node("sapling",{"description" : "Sapling","hard" : False})
+new_node("cactus",{"description" : "Cactus","hard" : False,"passthrough":True,"ow":True})
+new_node("iron_block",{"description" : "Iron_block","hard" : True})
+new_node("gold_block",{"description" : "Gold_block","hard" : False})
 # This old function isn't needed. It justs prints the nodes that exist before the game starts.
 # If you really need to see the nodes that exist, look at the lines above.
 # print_nodes()
@@ -65,13 +65,13 @@ def place_node(x,y,name):
 def dig_node(x,y,inventory,health):
     old_node = get_node(x,y)
     if get_node(x,y).lower() in inventory:
-        if inventory["pick"] != "" or nodes[get_node(sx,sy).lower()]["hard"] == "no" or flags["mode"] == "Creative":
+        if inventory["pick"] != "" or not nodes[get_node(sx,sy).lower()]["hard"] or flags["mode"] == "Creative":
             inventory[get_node(x,y).lower()] += 1
             place_node(x,y,"air")
         if inventory["pick"] == "" and "ow" in nodes[old_node.lower()] and flags["mode"] == "Survival":
             health -= 1
     else:
-        if inventory["pick"] != "" or nodes[get_node(sx,sy).lower()]["hard"] == "no" or flags["mode"] == "Creative":
+        if inventory["pick"] != "" or not nodes[get_node(sx,sy).lower()]["hard"] or flags["mode"] == "Creative":
             inventory[get_node(x,y).lower()] = 1
             place_node(x,y,"air")
 
@@ -455,10 +455,8 @@ top_text_timer = 0
 moving = False
 ## Functions to make it easier.
 def get_node_passible(x,y,modder):
-    if "passthrough" in nodes[get_node(x+modder,y).lower()]:
-        return True
-    else:
-        return False
+    return nodes[get_node(x+modder,y).get("passthrough")]
+
 ## End of Functions
 while True:
     gametime += 1
