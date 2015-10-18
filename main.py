@@ -60,7 +60,7 @@ new_node("gold_block",{"description" : "Gold_block","hard" : False})
 
 def place_node(x,y,name):
     name = name.lower() # You can put in either the description or the lowercase name.
-    world[str(x)+","+str(y)] = nodes[name]["description"]
+    world[(x, y)] = nodes[name]["description"]
 
 def dig_node(x,y,inventory,health):
     old_node = get_node(x,y)
@@ -85,10 +85,8 @@ def explode(x,y,inventory,health):
             else:
                 dig_node(x+sx,y+sy,inventory,health)
 def get_node(x,y):
-    if str(int(round(float(x))))+","+str(int(round(float(y)))) in world:
-        return(world[str(int(x))+","+str(int(y))])
-    else:
-        return("Stone")
+    coordinates = (int(round(float(x))), int(round(float(y))))
+    return world.get(coordinates, 'stone')
 
 def get_player_x():
     scrollcheck = scrollx%16
@@ -455,7 +453,7 @@ top_text_timer = 0
 moving = False
 ## Functions to make it easier.
 def get_node_passible(x,y,modder):
-    return nodes[get_node(x+modder,y).get("passthrough")]
+    return nodes[get_node(x+modder,y).lower()].get("passthrough")
 
 ## End of Functions
 while True:
@@ -546,12 +544,17 @@ while True:
             # if world/ doesn't exist, create it
             if not os.path.isdir("world"):
                 os.mkdir("world")
-            WorldSave = open("world/world.txt","wb")
-            WorldSave.write(json.dumps(world))
+            WorldSave = open("world/world.txt","w")
+            # fix the keys so world can be serialized
+            serializable_world = dict([
+                (str(k).strip('()'), v)
+                for k, v in world.items()
+            ])
+            WorldSave.write(json.dumps(serializable_world))
 
             WorldSave.close()
             pos_and_gametime = {"pos":str(scrollx) + "," + str(scrolly),"gametime":gametime,"inventory":inventory}
-            PosSave = open("world/pos.txt","wb")
+            PosSave = open("world/pos.txt","w")
             PosSave.write(json.dumps(pos_and_gametime))
 
             PosSave.close()
@@ -562,7 +565,12 @@ while True:
                 play_sound("sounds/Load.wav")
                 WorldSave = open("world/world.txt","r")
                 iterate = 0
-                world = json.loads(WorldSave.read())
+                raw_world = json.loads(WorldSave.read())
+                # convert world keys back to tuples
+                world = dict([
+                    ((int(k.split(", ")[0]), int(k.split(", ")[1])), v)
+                    for k, v in raw_world.items()
+                ])
                 WorldSave.close()
                 PosSave = open("world/pos.txt","r")
                 pos_and_gametime = json.loads(PosSave.read())
@@ -576,6 +584,7 @@ while True:
                 top_text = "Load Complete"
             except:
                 top_text = "Load Failure, maybe your file is old?"
+
         elif event.type == pygame.KEYDOWN and event.key == K_n:
             # Make a new world, so you don't need to restart.
             top_text = "Are you sure? Press Y to confirm, or press any key to stop."
@@ -682,7 +691,7 @@ while True:
         screen.blit(pygame.image.load("textures/Underground.png"),(0,0)) # Makes underground dark.
     # ABMs, Physics, Block drawing, etc.
     for block in world:
-        x, y = block.split(",")[:2]
+        x, y = block
         # Do water and sand physics
         if world[block] == "Water":
             if get_node(x,int(y)-1) != "Air":
