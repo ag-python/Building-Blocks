@@ -15,8 +15,8 @@ def new_node(name,attributes):
 
 def print_nodes():
     for x in nodes:
-        print x
-        print nodes[x]
+        print(x)
+        print(nodes[x])
     return
 
 def play_sound(sound):
@@ -198,7 +198,7 @@ def mapgen(grass,stone,air,iron,gold,tree,leaves,water,sand,tallgrass):
 
 def print_world():
     for x in world:
-        print world[x]
+        print(world[x])
     return
 
 mapgen("grass","stone","air","iron","gold","tree","leaves","water","sand","tallgrass")
@@ -529,7 +529,7 @@ while True:
         elif event.type == pygame.KEYDOWN and event.key == K_g:
             # Find the node under the player and print it (if you are using a terminal)
             print(get_node(scrollx/16,scrolly/16))
-            print scrollx%16
+            print(scrollx%16)
         elif event.type == pygame.KEYDOWN and event.key == K_c:
             # Change Clothing
             if direction[2] == "0":
@@ -545,9 +545,9 @@ while True:
         elif event.type == pygame.KEYDOWN and event.key == K_s:
             # Save
             play_sound("sounds/Save.wav")
-                        # if world/ doesn't exist, create it
-                        if not os.path.isdir("world"):
-                                os.mkdir("world")
+            # if world/ doesn't exist, create it
+            if not os.path.isdir("world"):
+                os.mkdir("world")
             WorldSave = open("world/world.txt","wb")
             WorldSave.write(json.dumps(world))
 
