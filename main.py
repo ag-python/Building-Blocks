@@ -30,37 +30,65 @@ def write(text, start_x,y):
         screen.blit(pygame.image.load("textures/Numbers/"+letter+".png"),(start_x+xadd,y))
         xadd += 7
 
-new_node("grass",{"description" : "Grass","hard" : False})
+new_node("grass",{"description" : "Grass","hard" : False, "texture": "Grass.png"})
 new_node("tnt",{"description" : "Tnt","hard" : False,"texture" : "TNT.png"})
-new_node("tallgrass",{"description" : "TallGrass","hard" : False,"passthrough":True})
-new_node("door",{"description" : "Door","hard" : True,"passthrough":True})
-new_node("door_closed",{"description" : "Door_Closed","hard" : True})
-new_node("door2",{"description" : "Door2","hard" : True,"passthrough":True})
-new_node("door_closed2",{"description" : "Door_Closed2","hard" : True})
-new_node("water",{"description" : "Water","hard" : False,"passthrough":True})
-new_node("flowingwater",{"description" : "FlowingWater","hard" : False,"passthrough":True})
-new_node("flowingwater2",{"description" : "FlowingWater2","hard" : False,"passthrough":True})
-new_node("backwall",{"description" : "BackWall","hard" : False,"passthrough":True })
-new_node("leaves",{"description" : "Leaves","hard" : False,"passthrough":True})
-new_node("tree",{"description" : "Tree","hard" : False,"passthrough":True})
-new_node("iron",{"description" : "Iron","hard" : True})
-new_node("gold",{"description" : "Gold","hard" : True})
-new_node("stone",{"description" : "Stone","hard" : True})
-new_node("brick",{"description" : "Brick","hard" : True})
+new_node("tallgrass",{"description" : "TallGrass","hard" : False,"passthrough":True, "texture": "TallGrass.png"})
+new_node("door",{"description" : "Door","hard" : True,"passthrough":True, "texture": "Door.png"})
+new_node("door_closed",
+         {"description": "Door_Closed",
+          "hard": True,
+          "texture": "Door_Closed.png"
+         })
+new_node(
+    "door2",
+    {"description" : "Door2",
+     "hard" : True,
+     "passthrough":True,
+     "texture": "Door2.png"
+    })
+new_node("door_closed2",{"description" : "Door_Closed2","hard" : True, "texture": "Door_Closed2.png"})
+new_node("water",{"description" : "Water","hard" : False,"passthrough":True, "texture": "Water.png"})
+new_node("flowingwater",{"description" : "FlowingWater","hard" : False,"passthrough":True, "texture": "FlowingWater.png"})
+new_node("flowingwater2",{"description" : "FlowingWater2","hard" : False,"passthrough":True, "texture": "FlowingWater2.png"})
+new_node("backwall",{"description" : "BackWall","hard" : False,"passthrough":True, "texture": "BackWall.png" })
+new_node("leaves",{"description" : "Leaves","hard" : False,"passthrough":True, "texture": "Leaves.png"})
+new_node("tree",{"description" : "Tree","hard" : False,"passthrough":True, "texture": "Tree.png"})
+new_node("iron",{"description" : "Iron","hard" : True, "texture": "Iron.png"})
+new_node("gold",{"description" : "Gold","hard" : True, "texture": "Gold.png"})
+new_node("stone",{"description" : "Stone","hard" : True, "texture": "Stone.png"})
+new_node("brick",{"description" : "Brick","hard" : True, "texture": "Brick.png"})
 new_node("air",{"description" : "Air","hard" : False,"passthrough":True})
-new_node("sand",{"description" : "Sand","hard" : False})
-new_node("wood",{"description" : "Wood","hard" : False})
-new_node("sapling",{"description" : "Sapling","hard" : False})
-new_node("cactus",{"description" : "Cactus","hard" : False,"passthrough":True,"ow":True})
-new_node("iron_block",{"description" : "Iron_block","hard" : True})
-new_node("gold_block",{"description" : "Gold_block","hard" : False})
+new_node("sand",{"description" : "Sand","hard" : False, "texture": "Sand.png"})
+new_node("wood",{"description" : "Wood","hard" : False, "texture": "Wood.png"})
+new_node("sapling",{"description" : "Sapling","hard" : False, "texture": "Sapling.png"})
+new_node("cactus",{"description" : "Cactus","hard" : False,"passthrough":True,"ow":True, "texture": "Cactus.png"})
+new_node("iron_block",{"description" : "Iron_block","hard" : True, "texture": "Iron_block.png"})
+new_node("gold_block",{"description" : "Gold_block","hard" : False, "texture": "Gold_block.png"})
 # This old function isn't needed. It justs prints the nodes that exist before the game starts.
 # If you really need to see the nodes that exist, look at the lines above.
 # print_nodes()
 
-def place_node(x,y,name):
+def place_node(x, y, name, delta=(0, 0)):
     name = name.lower() # You can put in either the description or the lowercase name.
-    world[(x, y)] = nodes[name]["description"]
+    if name in nodes:
+        world[(x + delta[0], y + delta[1])] = name
+    else:
+        raise KeyError("{} is an invalid node type".format(name))
+
+# convenience for logic readability
+
+def place_node_above(x, y, name):
+    place_node(x, y, name, delta=(0, 1))
+
+def place_node_below(x, y, name):
+    place_node(x, y, name, delta=(0, -1))
+
+def place_node_right_of(x, y, name):
+    place_node(x, y, name, delta=(1, 0))
+
+def place_node_left_of(x, y, name):
+    place_node(x, y, name, delta=(-1, 0))
+
 
 def dig_node(x,y,inventory,health):
     old_node = get_node(x,y)
@@ -84,9 +112,24 @@ def explode(x,y,inventory,health):
                 explode(x+sx,y+sy,inventory,health)
             else:
                 dig_node(x+sx,y+sy,inventory,health)
-def get_node(x,y):
+def get_node(x, y):
     coordinates = (int(round(float(x))), int(round(float(y))))
     return world.get(coordinates, 'stone')
+
+# some convenience functions to make logic more readable
+
+def get_node_above(x, y):
+    return get_node(x, y+1)
+
+def get_node_below(x, y):
+    return get_node(x, y-1)
+
+def get_node_left_of(x, y):
+    return get_node(x-1, y)
+
+def get_node_right_of(x, y):
+    return get_node(x+1, y)
+
 
 def get_player_x():
     scrollcheck = scrollx%16
@@ -166,7 +209,7 @@ def mapgen(grass,stone,air,iron,gold,tree,leaves,water,sand,tallgrass):
             if get_node(x-1,0).lower() == grass or get_node(x-1,1).lower() == grass: # Make Shores
                 place_node(x-1,0,sand)
             else:
-                if random.randint(1,3) == 2 and get_node(x-1,y).lower() != sand:
+                if random.randint(1,3) == 2 and get_node_left_of(x, y).lower() != sand:
                     place_node(x,0,water)
                     place_node(x,-1,water) # Make deeper sand banks
                     place_node(x,-2,sand)
@@ -446,7 +489,7 @@ selectlist = ["stone","grass","iron","gold","brick","tree","backwall","water","s
 inventory = {"pick":""}
 pygame.key.set_repeat(1, 2)
 gravitytimer = 0
-dropthrough = ["Air","Water","FlowingWater","BackWall","TallGrass"]
+dropthrough = ["air","water","flowingwater","backwall","tallgrass"]
 old_top_text = ""
 top_text = ""
 top_text_timer = 0
@@ -503,7 +546,7 @@ while True:
             moving = True
             # Go right
             if get_node_passible((scrollx/16),(scrolly/16)+1,0) and get_node_passible((scrollx/16),(scrolly/16)+2,0):
-                if get_node(get_player_x(),get_player_y()) == "Water" or get_node(get_player_x(),get_player_y()) == "FlowingWater":
+                if get_node(get_player_x(),get_player_y()) == "water" or get_node(get_player_x(),get_player_y()) == "flowingwater":
                     scrollx -= 2
                     ychange += 1
                     if ychange > 3:
@@ -515,8 +558,8 @@ while True:
             moving = False
         elif event.type == pygame.KEYDOWN and pygame.key.get_pressed()[K_UP]:
             # Jump
-            if get_node(scrollx/16,scrolly/16) != "Air" and get_node_passible(get_player_x(),get_player_y()+3,0):
-                if get_node(get_player_x(),get_player_y()) == "Water" or get_node(get_player_x(),get_player_y()) == "FlowingWater":
+            if get_node(scrollx/16,scrolly/16) != "air" and get_node_passible(get_player_x(),get_player_y()+3,0):
+                if get_node(get_player_x(),get_player_y()) == "water" or get_node(get_player_x(),get_player_y()) == "FlowingWater":
                     scrolly += 2
                 else:
                     # scrolly += 28
@@ -621,7 +664,7 @@ while True:
             mouse_x,mouse_y = pygame.mouse.get_pos()
             spos = sx,sy = (int(round((-((mouse_x+(308*(resolution-1)))/(16*resolution))+19.75)+scrollx/(16))),int(round((-((mouse_y+(208*(resolution-1)))/(16*resolution)))+14.75+(scrolly/16))))
             if event.button == 1: # Dig or Build
-                if get_node(sx,sy) == "Air" or get_node(sx,sy) == "Water" or get_node(sx,sy) == "FlowingWater":
+                if get_node(sx,sy) == "air" or get_node(sx,sy) == "water" or get_node(sx,sy) == "flowingwater":
                     if selectnode in inventory and flags["mode"] == "Survival" and inventory[selectnode] > 0:
                         place_node(sx,sy,selectnode)
                         inventory[selectnode] -= 1
@@ -636,15 +679,15 @@ while True:
                     if flags["mute"] == False:
                         play_sound("sounds/dig.ogg")
             elif event.button == 3: # Open Doors, press buttons, etc.
-                if get_node(sx,sy) == "Door":
+                if get_node(sx,sy) == "door":
                     place_node(sx,sy,"door_closed")
-                elif get_node(sx,sy) == "Door_Closed":
+                elif get_node(sx,sy) == "door_closed":
                     place_node(sx,sy,"door")
-                if get_node(sx,sy) == "Door2":
+                if get_node(sx,sy) == "door2":
                     place_node(sx,sy,"door_closed2")
-                elif get_node(sx,sy) == "Door_Closed2":
+                elif get_node(sx,sy) == "door_closed2":
                     place_node(sx,sy,"door2")
-                if get_node(sx,sy) == "Tnt":
+                if get_node(sx,sy) == "tnt":
                     explode(sx,sy,inventory,health)
     if moving == True:
         animationvariable += 1
@@ -667,7 +710,7 @@ while True:
         health -=1 # If you fall off of the world, you will die.
     if get_node(get_player_x(),get_player_y()) in dropthrough:
         gravityon = True
-        if get_node(get_player_x(),get_player_y()) == "Water" or get_node(get_player_x(),get_player_y()) == "FlowingWater":
+        if get_node(get_player_x(),get_player_y()) == "water" or get_node(get_player_x(),get_player_y()) == "flowingwater":
             scrolly -= 1
             gravitytimer = 0
         else:
@@ -692,59 +735,74 @@ while True:
     # ABMs, Physics, Block drawing, etc.
     for block in world:
         x, y = block
+        here = world[block]
+        above = get_node_above(*block)
+        below = get_node_below(*block)
+        to_right = get_node_right_of(*block)
+        to_left = get_node_left_of(*block)
+
         # Do water and sand physics
-        if world[block] == "Water":
-            if get_node(x,int(y)-1) != "Air":
-                if get_node(int(x)-1,y) == "Air":
-                    place_node(int(x)-1,y,"flowingwater")
-                if get_node(int(x)+1,y) == "Air":
-                    place_node(int(x)+1,y,"flowingwater")
+        if here == "water":
+            if below != "air":
+                if to_left == "air":
+                    place_node_left_of(*block,"flowingwater")
+                if to_right == "air":
+                    place_node_right_of(*block,"flowingwater")
             else:
-                place_node(x,int(y)-1,"flowingwater")
-            if get_node(x,int(y)-1) == "Air" or get_node(x,int(y)-1) == "FlowingWater":
-                place_node(x,int(y)-1, "water")
-        if world[block] == "FlowingWater":
-            if get_node(int(x)-1,y) != "Water" and get_node(int(x)+1,y) != "Water":
-                place_node(x,y,"air")
-            if get_node(x,int(y)-1) != "Air":
-                if get_node(int(x)-1,y) == "Air" and (get_node(int(x),int(y)-1) != "Air" and get_node(int(x),int(y)-1) != "Water" and get_node(int(x),int(y)-1) != "FlowingWater"):
-                    place_node(int(x)-1,y,"flowingwater2")
-                if get_node(int(x)+1,y) == "Air" and (get_node(int(x),int(y)-1) != "Air" and get_node(int(x),int(y)-1) != "Water" and get_node(int(x),int(y)-1) != "FlowingWater"):
-                    place_node(int(x)+1,y,"flowingwater2")
-            if get_node(x,int(y)-1) == "Air" or get_node(x,int(y)-1) == "FlowingWater":
-                place_node(x,int(y)-1, "water")
-        if world[block] == "FlowingWater2":
-            if get_node(int(x)-1,y) != "FlowingWater" and get_node(int(x)+1,y) != "FlowingWater":
-                place_node(x,y,"air")
-        if world[block] == "Sand" and timer == 10:
-            if get_node(x,int(y)-1) == "Air" or get_node(x,int(y)-1) == "TallGrass":
-                place_node(x,y,"air")
-                place_node(x,int(y)-1,"sand")
+                place_node_below(*block, "flowingwater")
+            if below in ("air", "flowingwater"):
+                place_node_below(*block, "water")
+        if here == "flowingWater":
+            if "water" not in (to_left, to_right):
+                place_node(*block, "air")
+                here = world[block]
+            if below != "air":
+                if to_left == "air" and (below != "air" and below != "water" and below != "flowingwater"):
+                    place_node_left_of(*block, "flowingwater2")
+                if to_right == "air" and (below != "air" and below != "water" and below != "flowingwater"):
+                    place_node_right_of(*block, "flowingwater2")
+            if below == "air" or below == "flowingwater":
+                place_node_below(*block, "water")
+        if here == "flowingwater2":
+            if to_left != "flowingwater" and to_right != "flowingwater":
+                place_node(*block, "air")
+        if here == "sand" and timer == 10:
+            if below == "air" or below == "tallgrass":
+                place_node(*block, "air")
+                here = world[block]
+                place_node_below(*block, "sand")
         # Grow Saplings
-        if world[block] == "Sapling" and timer == 10 and random.randint(1,10) == 1:
-            place_node(x,y,"tree")
-            place_node(x,int(y)+1,"tree")
+        if here == "sapling" and timer == 10 and random.randint(1,10) == 1:
+            place_node(*block,"tree")
+            here = world[block]
+            place_node_above(*block,"tree")
             if random.randint(1,3) == 3:
-                place_node(x,int(y)+2,"tree")
-                place_node(int(x)+1,int(y)+2,"leaves")
-                place_node(int(x)-1,int(y)+2,"leaves")
-                place_node(x,int(y)+3,"leaves")
+                tree = {
+                    (0, 2): "tree",
+                    (1, 2): "leaves",
+                    (-1, 2): "leaves",
+                    (0, 3): "leaves"
+                }
             else:
-                place_node(int(x)+1,int(y)+1,"leaves")
-                place_node(int(x)-1,int(y)+1,"leaves")
-                place_node(x,int(y)+2,"leaves")
+                tree = {
+                    (1, 1): "leaves",
+                    (-1, 1): "leaves",
+                    (0, 2): "leaves"
+                }
+            for delta, ntype in tree.items():
+                place_node(*block, ntype, delta)
         # Render blocks
-        if world[block] != "Air":
-            if scrollx+((int(x)-20) * -16) < 610 and scrollx+((int(x)-20) * -16) > -10:
-                if scrolly+((int(y)-14)* -16) < 410 and scrolly+((int(y)-14)* -16) > -30:
+        if here != "air":
+            if scrollx+((x-20) * -16) < 610 and scrollx+((x-20) * -16) > -10:
+                if scrolly+((y-14)* -16) < 410 and scrolly+((y-14)* -16) > -30:
                     if "texture" in nodes[get_node(x,y).lower()]:
                         picture = pygame.image.load("textures/" + nodes[get_node(x,y).lower()]["texture"])
                         size = height,width = picture.get_size()
-                        screen.blit(pygame.transform.scale(picture,(width*resolution,height*resolution)),((scrollx*resolution+((int(x)-19.5) * -16*resolution))-(308*(resolution-1)),(scrolly+((int(y)-14.5)* -16))*resolution-(208*(resolution-1))))
+                        screen.blit(pygame.transform.scale(picture,(width*resolution,height*resolution)),((scrollx*resolution+((x-19.5) * -16*resolution))-(308*(resolution-1)),(scrolly+((y-14.5)* -16))*resolution-(208*(resolution-1))))
                     else:
                         picture = pygame.image.load("textures/" + get_node(x,y) + ".png")
                         size = height,width = picture.get_size()
-                        screen.blit(pygame.transform.scale(picture,(width*resolution,height*resolution)),((scrollx*resolution+((int(x)-19.5) * -16*resolution))-(308*(resolution-1)),(scrolly+((int(y)-14.5)* -16))*resolution-(208*(resolution-1))))
+                        screen.blit(pygame.transform.scale(picture,(width*resolution,height*resolution)),((scrollx*resolution+((x-19.5) * -16*resolution))-(308*(resolution-1)),(scrolly+((y-14.5)* -16))*resolution-(208*(resolution-1))))
     if flags["mode"] == "Survival": # Hearts, Death Screen and Respawn.
         if health > 2:
             screen.blit(pygame.image.load("textures/player/heart.png"),(20,20))
